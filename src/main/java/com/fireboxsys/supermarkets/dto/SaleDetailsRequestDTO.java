@@ -1,0 +1,17 @@
+package com.fireboxsys.supermarkets.dto;
+
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import lombok.Data;
+
+@Data
+public class SaleDetailsRequestDTO {
+
+    @NotNull( message = "Product ID is required")
+    private Long productId;
+
+    @NotNull( message = "Quantity is required")
+    @Min( value = 1, message = "Quantity cannot be less than 1")
+    private Integer quantity;
+
+}

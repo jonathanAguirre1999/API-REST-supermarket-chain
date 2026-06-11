@@ -1,0 +1,36 @@
+package com.fireboxsys.supermarkets.model;
+
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.LocalDate;
+import java.util.List;
+
+@Entity
+@Getter
+@Setter
+@NoArgsConstructor
+public class Sale {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    private Long id;
+
+    private LocalDate date;
+
+    @Enumerated(EnumType.STRING)
+    private Status status;
+
+    private Double total;
+
+    @ManyToOne
+    private Branch branch;
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SaleDetails> saleDetails;
+
+    private Boolean isDeleted;
+
+}
