@@ -9,6 +9,8 @@ import com.fireboxsys.supermarkets.model.Product;
 import com.fireboxsys.supermarkets.model.Sale;
 import com.fireboxsys.supermarkets.model.SaleDetails;
 
+import java.util.List;
+
 public class Mapper {
 
     public static ProductResponseDTO toDTO(Product p) {
@@ -18,12 +20,13 @@ public class Mapper {
                 .name(p.getName())
                 .category(p.getCategory())
                 .price(p.getPrice())
-                .quantity(p.getQuantity())
+                .stock(p.getStock())
                 .build();
     }
 
     public static SaleResponseDTO toDTO(Sale s) {
         if (s == null) return null;
+
         return SaleResponseDTO.builder()
                 .id(s.getId())
                 .date(s.getDate())
@@ -31,7 +34,9 @@ public class Mapper {
                 .total(s.getTotal())
                 .branchId(s.getBranch().getId())
                 .branchName(s.getBranch().getName())
-                .saleDetails(s.getSaleDetails().stream().map(d -> toDTO(d)).toList())
+                .saleDetails(s.getSaleDetails().stream()
+                        .map(Mapper::toDTO)
+                        .toList())
                 .build();
     }
 

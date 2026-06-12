@@ -19,8 +19,8 @@ public class ProductRequestDTO {
     @Positive( message = "Price cannot be negative or 0")
     private Double price;
 
-    @NotNull( message = "Quantity cannot be empty or less than 1")
-    @Min( value = 1, message = "Quantity cannot be less than 1")
-    private Integer quantity;
+    @NotNull( message = "Stock cannot be empty or less than 1")
+    @Min( value = 1, message = "Stock cannot be less than 1")
+    private Integer stock;
 
 }

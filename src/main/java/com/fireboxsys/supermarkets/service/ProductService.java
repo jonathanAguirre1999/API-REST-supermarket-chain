@@ -3,10 +3,15 @@ package com.fireboxsys.supermarkets.service;
 import com.fireboxsys.supermarkets.dto.ProductRequestDTO;
 import com.fireboxsys.supermarkets.dto.ProductResponseDTO;
 import com.fireboxsys.supermarkets.exception.NotFoundException;
+import com.fireboxsys.supermarkets.mappers.Mapper;
 import com.fireboxsys.supermarkets.model.Product;
 import com.fireboxsys.supermarkets.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -23,38 +28,53 @@ public class ProductService implements IProductService{
     }
 
     @Override
+    @Transactional
     public ProductResponseDTO save(ProductRequestDTO newProductDTO) {
         if (newProductDTO == null) throw new IllegalArgumentException("Product cannot be null");
         Product p = new Product();
         p.setName(newProductDTO.getName());
         p.setCategory(newProductDTO.getCategory());
         p.setPrice(newProductDTO.getPrice());
-        p.setQuantity(newProductDTO.getQuantity());
+        p.setStock(newProductDTO.getStock());
         return toDTO(productRepository.save(p));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ProductResponseDTO findById(Long id) {
         return toDTO(productRepository.findById(id).orElseThrow(() ->
                 new NotFoundException("Product not found: id #" + id)));
     }
 
     @Override
-    public List<ProductResponseDTO> findAll() {
-        return productRepository.findAll().stream().map(p -> toDTO(p)).toList();
+    @Transactional(readOnly = true)
+    public Page<ProductResponseDTO> findAll(Pageable pageable) {
+        return productRepository.findAll(pageable).map(Mapper::toDTO);
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public ProductResponseDTO findTopProduct() {
+        List<Product> products = productRepository.findTopProducts(PageRequest.of(0, 1));
+
+        if (products.isEmpty()) throw new NotFoundException("No sales recorded yet to find the most sold product.");
+
+        return toDTO(products.get(0));
+    }
+
+    @Override
+    @Transactional
     public ProductResponseDTO update(Long id, ProductRequestDTO productDTO) {
         Product p = productRepository.findById(id).orElseThrow(() -> new NotFoundException("Product not found: id #" + id));
         p.setName(productDTO.getName());
         p.setCategory(productDTO.getCategory());
         p.setPrice(productDTO.getPrice());
-        p.setQuantity(productDTO.getQuantity());
+        p.setStock(productDTO.getStock());
         return toDTO(productRepository.save(p));
     }
 
     @Override
+    @Transactional
     public void delete(Long id) {
         Product p = productRepository.findById(id).orElseThrow(() ->
                 new NotFoundException("Product not found: id #" + id));

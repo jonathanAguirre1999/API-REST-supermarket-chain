@@ -22,7 +22,7 @@ public class Product {
     private String name;
     private String category;
     private Double price;
-    private Integer quantity;
+    private Integer stock;
 
     @Column(nullable = false, columnDefinition = "boolean default false")
     private Boolean isDeleted = false;
