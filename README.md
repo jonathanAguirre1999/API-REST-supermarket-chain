@@ -1,9 +1,9 @@
 # Supermarket Chain Management API 
-### Production-Ready RESTful Backend Engine for Retail Logistics
+### RESTful Backend Engine for Retail Logistics
 
-An architectural showcase of a high-performance, enterprise-grade RESTful API built with **Java** and **Spring Boot**. This project was developed for a real-world supermarket management ecosystem, handling multi-branch coordination, highly dynamic product catalogs, automated stock control, and transaction-safe sales processing.
+An architectural showcase of a RESTful API built with **Java** and **Spring Boot**. This project was developed for a real-world supermarket management ecosystem, handling multi-branch coordination, highly dynamic product catalogs, automated stock control, and transaction-safe sales processing.
 
-Designed strictly as a professional portfolio asset, this system demonstrates the implementation of corporate software engineering standards, advanced persistence patterns, clean architecture, and rigorous validation metrics required in top-tier engineering teams.
+This system demonstrates the implementation of best practices in software engineering standards, advanced persistence patterns, clean architecture, and rigorous validation metrics.
 
 ---
 
@@ -53,6 +53,8 @@ The system integrates an interactive documentation layout using **Springdoc Open
 * **Documentation:** Springdoc OpenAPI UI (v3)
 * **Boilerplate Reduction:** Project Lombok
 * **Build Automation:** Apache Maven
+* **Continuous Integration:** GitHub Actions
+* **Testing Framework & Tools:** JUnit 5, Mockito, JaCoCo, SonarLint / SonarQube (SonarCloud)
 
 ---
 
@@ -84,6 +86,5 @@ The system integrates an interactive documentation layout using **Springdoc Open
 ---
 
 ## Upcoming Quality Assurance Roadmap
-1.  **Testing Suite Matrix:** Implementation of automated unit and integration tests using **JUnit 5** and **Mockito** to lock service invariants and transaction handling.
-2.  **Continuous Inspection Quality Gates:** Setting up **JaCoCo** code coverage reports and static code analysis tracking via **SonarLint / SonarQube**.
-3.  **Containerized Deployment:** Multi-stage **Docker** build configurations to sandbox the Spring Boot application and link it to a containerized PostgreSQL instance via Docker Compose.
+1. **Containerized Deployment:** Multi-stage **Docker** build configurations to sandbox the Spring Boot application and link it to a containerized PostgreSQL instance via Docker Compose.
+2. **Security & Access Control:** Enhanced security measures to protect sensitive data and prevent unauthorized access through **Spring Security** and **JWT** authentication.

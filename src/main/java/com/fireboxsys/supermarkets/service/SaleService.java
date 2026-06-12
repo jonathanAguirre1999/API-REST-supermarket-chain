@@ -19,7 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -73,7 +73,7 @@ public class SaleService implements ISaleService{
             p.setStock(p.getStock() - saleDetailsDTO.getQuantity());
         }
 
-        s.setDate(LocalDate.now());
+        s.setDate(LocalDateTime.now());
         s.setStatus(Status.REGISTERED);
         s.setBranch(branchRepository
                 .findById(newSaleDTO.getBranchId())

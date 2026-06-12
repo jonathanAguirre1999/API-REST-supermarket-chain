@@ -5,7 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -18,7 +19,7 @@ public class Sale {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
-    private LocalDate date;
+    private LocalDateTime date;
 
     @Enumerated(EnumType.STRING)
     private Status status;
@@ -29,7 +30,7 @@ public class Sale {
     private Branch branch;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<SaleDetails> saleDetails;
+    private List<SaleDetails> saleDetails = new ArrayList<>();
 
     private Boolean isDeleted;
 
