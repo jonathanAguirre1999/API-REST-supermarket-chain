@@ -2,6 +2,7 @@ package com.fireboxsys.supermarkets.exception;
 
 import com.fireboxsys.supermarkets.dto.ErrorResponseDTO;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -10,14 +11,16 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.TimeZone;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ErrorResponseDTO> handleNotFoundException(NotFoundException ex, HttpServletRequest request) {
         ErrorResponseDTO errorResponseDTO = ErrorResponseDTO.builder()
-                .timestamp(LocalDateTime.now())
+                .timestamp(LocalDateTime.now(TimeZone.getTimeZone("UTC").toZoneId()))
                 .statusCode(HttpStatus.NOT_FOUND.value())
                 .error(HttpStatus.NOT_FOUND.getReasonPhrase())
                 .message(ex.getMessage())
@@ -30,7 +33,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NotEnoughStockException.class)
     public ResponseEntity<ErrorResponseDTO> handleNotEnoughStockException(NotEnoughStockException ex, HttpServletRequest request) {
         ErrorResponseDTO errorResponseDTO = ErrorResponseDTO.builder()
-                .timestamp(LocalDateTime.now())
+                .timestamp(LocalDateTime.now(TimeZone.getTimeZone("UTC").toZoneId()))
                 .statusCode(HttpStatus.CONFLICT.value())
                 .error(HttpStatus.CONFLICT.getReasonPhrase())
                 .message(ex.getMessage())
@@ -43,14 +46,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponseDTO> handleGenericException(Exception ex, HttpServletRequest request){
         ErrorResponseDTO errorResponseDTO = ErrorResponseDTO.builder()
-                .timestamp(LocalDateTime.now())
+                .timestamp(LocalDateTime.now(TimeZone.getTimeZone("UTC").toZoneId()))
                 .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
                 .message("An unexpected error occurred, please try again later or contact support.")
                 .path(request.getRequestURI())
                 .build();
 
-        System.out.println(ex.getMessage());
+        log.error("An unexpected error occurred: {}", ex.getMessage());
         ex.printStackTrace();
 
         return new ResponseEntity<>(errorResponseDTO, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -67,7 +70,7 @@ public class GlobalExceptionHandler {
                 .toList();
 
         ErrorResponseDTO errorResponseDTO = ErrorResponseDTO.builder()
-                .timestamp(LocalDateTime.now())
+                .timestamp(LocalDateTime.now(TimeZone.getTimeZone("UTC").toZoneId()))
                 .statusCode(HttpStatus.BAD_REQUEST.value())
                 .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
                 .message("Validation errors for one or more fields.")

@@ -9,9 +9,8 @@ import com.fireboxsys.supermarkets.model.Product;
 import com.fireboxsys.supermarkets.model.Sale;
 import com.fireboxsys.supermarkets.model.SaleDetails;
 
-import java.util.List;
-
 public class Mapper {
+    private Mapper() {}
 
     public static ProductResponseDTO toDTO(Product p) {
         if (p == null) return null;

@@ -3,6 +3,7 @@ package com.fireboxsys.supermarkets.service;
 import com.fireboxsys.supermarkets.dto.BranchRequestDTO;
 import com.fireboxsys.supermarkets.dto.BranchResponseDTO;
 import com.fireboxsys.supermarkets.exception.NotFoundException;
+import com.fireboxsys.supermarkets.mappers.Mapper;
 import com.fireboxsys.supermarkets.model.Branch;
 import com.fireboxsys.supermarkets.repository.BranchRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import static com.fireboxsys.supermarkets.mappers.Mapper.toDTO;
 @Service
 public class BranchService implements IBranchService{
 
+    private static final String DEFAULT_MESSAGE = "Branch not found: id#";
     private final BranchRepository branchRepository;
 
     @Autowired
@@ -35,21 +37,21 @@ public class BranchService implements IBranchService{
     @Override
     @Transactional(readOnly = true)
     public BranchResponseDTO findById(Long id) {
-        return branchRepository.findById(id).map(b -> toDTO(b)).orElseThrow(() ->
-                new NotFoundException("Branch not found: id #" + id));
+        return branchRepository.findById(id).map(Mapper::toDTO).orElseThrow(() ->
+                new NotFoundException(DEFAULT_MESSAGE + id));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<BranchResponseDTO> findAll() {
-        return branchRepository.findAll().stream().map(b -> toDTO(b)).toList();
+        return branchRepository.findAll().stream().map(Mapper::toDTO).toList();
     }
 
     @Override
     @Transactional
     public BranchResponseDTO update(Long id, BranchRequestDTO branchDTO) {
         Branch b = branchRepository.findById(id).orElseThrow(() ->
-                new NotFoundException("Branch not found: id #" + id));
+                new NotFoundException(DEFAULT_MESSAGE + id));
         b.setName(branchDTO.getName());
         b.setAddress(branchDTO.getAddress());
         return toDTO(branchRepository.save(b));
@@ -59,7 +61,7 @@ public class BranchService implements IBranchService{
     @Transactional
     public void delete(Long id) {
         Branch b = branchRepository.findById(id). orElseThrow(() ->
-                new NotFoundException("Branch not found: id #" + id));
+                new NotFoundException(DEFAULT_MESSAGE + id));
         branchRepository.delete(b);
     }
 }

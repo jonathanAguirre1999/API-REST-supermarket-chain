@@ -21,6 +21,7 @@ import static com.fireboxsys.supermarkets.mappers.Mapper.toDTO;
 public class ProductService implements IProductService{
 
     private final ProductRepository productRepository;
+    private static final String DEFAULT_PRODUCT_NOT_FOUND_MESSAGE = "Product not found: id#";
 
     @Autowired
     public ProductService(ProductRepository productRepository) {
@@ -43,7 +44,7 @@ public class ProductService implements IProductService{
     @Transactional(readOnly = true)
     public ProductResponseDTO findById(Long id) {
         return toDTO(productRepository.findById(id).orElseThrow(() ->
-                new NotFoundException("Product not found: id #" + id)));
+                new NotFoundException(DEFAULT_PRODUCT_NOT_FOUND_MESSAGE + id)));
     }
 
     @Override
@@ -65,7 +66,7 @@ public class ProductService implements IProductService{
     @Override
     @Transactional
     public ProductResponseDTO update(Long id, ProductRequestDTO productDTO) {
-        Product p = productRepository.findById(id).orElseThrow(() -> new NotFoundException("Product not found: id #" + id));
+        Product p = productRepository.findById(id).orElseThrow(() -> new NotFoundException(DEFAULT_PRODUCT_NOT_FOUND_MESSAGE + id));
         p.setName(productDTO.getName());
         p.setCategory(productDTO.getCategory());
         p.setPrice(productDTO.getPrice());
@@ -77,7 +78,7 @@ public class ProductService implements IProductService{
     @Transactional
     public void delete(Long id) {
         Product p = productRepository.findById(id).orElseThrow(() ->
-                new NotFoundException("Product not found: id #" + id));
+                new NotFoundException(DEFAULT_PRODUCT_NOT_FOUND_MESSAGE+ id));
         productRepository.delete(p);
     }
 }
