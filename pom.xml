@@ -155,20 +155,32 @@
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>0.8.11</version> <executions>
-				<execution>
-					<goals>
-						<goal>prepare-agent</goal>
-					</goals>
-				</execution>
-				<execution>
-					<id>report</id>
-					<phase>verify</phase>
-					<goals>
-						<goal>report</goal>
-					</goals>
-				</execution>
-			</executions>
+				<version>0.8.11</version>
+				<configuration>
+					<excludes>
+						<exclude>com/fireboxsys/supermarkets/*Application.class</exclude>
+
+						<exclude>com/fireboxsys/supermarkets/config/**</exclude>
+						<exclude>com/fireboxsys/supermarkets/dto/**</exclude>
+						<exclude>com/fireboxsys/supermarkets/model/**</exclude>
+
+						<exclude>com/fireboxsys/supermarkets/mappers/**</exclude>
+					</excludes>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>report</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

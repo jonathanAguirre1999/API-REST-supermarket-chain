@@ -5,9 +5,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -78,6 +80,38 @@ public class GlobalExceptionHandler {
                 .validationErrors(errors)
                 .build();
 
+        return new ResponseEntity<>(errorResponseDTO, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponseDTO> handleTypeMismatch(MethodArgumentTypeMismatchException ex, HttpServletRequest request) {
+        String error = String.format("Parameter '%s' must be a '%s' data type. Received value: '%s'",
+                ex.getName(),
+                ex.getRequiredType().getSimpleName(),
+                ex.getValue());
+
+        ErrorResponseDTO errorResponseDTO = ErrorResponseDTO.builder()
+                .timestamp(LocalDateTime.now(TimeZone.getTimeZone("UTC").toZoneId()))
+                .statusCode(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .message(error)
+                .path(request.getRequestURI())
+                .build();
+
+        return new ResponseEntity<>(errorResponseDTO, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponseDTO> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex, HttpServletRequest request) {
+        String error = "Invalid JSON format. Please check your request body.";
+
+        ErrorResponseDTO errorResponseDTO = ErrorResponseDTO.builder()
+                .timestamp(LocalDateTime.now(TimeZone.getTimeZone("UTC").toZoneId()))
+                .statusCode(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .message(error)
+                .path(request.getRequestURI())
+                .build();
         return new ResponseEntity<>(errorResponseDTO, HttpStatus.BAD_REQUEST);
     }
 }
