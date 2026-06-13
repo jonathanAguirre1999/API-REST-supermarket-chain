@@ -1,5 +1,10 @@
 # Supermarket Chain Management API 
 [![SonarQube](https://github.com/jonathanAguirre1999/API-REST-supermarket-chain/actions/workflows/workflow.yml/badge.svg?branch=main)](https://github.com/jonathanAguirre1999/API-REST-supermarket-chain/actions/workflows/workflow.yml)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=jonathanAguirre1999_API-REST-supermarket-chain&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=jonathanAguirre1999_API-REST-supermarket-chain)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=jonathanAguirre1999_API-REST-supermarket-chain&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=jonathanAguirre1999_API-REST-supermarket-chain)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=jonathanAguirre1999_API-REST-supermarket-chain&metric=coverage)](https://sonarcloud.io/summary/new_code?id=jonathanAguirre1999_API-REST-supermarket-chain)
+
+
 ### RESTful Backend Engine for Retail Logistics
 
 An architectural showcase of a RESTful API built with **Java** and **Spring Boot**. This project was developed for a real-world supermarket management ecosystem, handling multi-branch coordination, highly dynamic product catalogs, automated stock control, and transaction-safe sales processing.
