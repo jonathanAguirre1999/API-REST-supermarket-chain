@@ -90,3 +90,38 @@ Every multi-row tracking route (`findAll` on Products, `findAll` on Sales, and `
 * **Positive:** Clean, predictable, and highly informative REST API error responses, removing security exposures.
 * **Positive:** Microscopic code footprint by fully delegating state updates to Hibernate's context monitoring lifecycle (Dirty Checking).
 * **Negative:** Slightly higher computational density within the `SaleService` orchestration loop due to the requirement of handling multiple database cross-references per request line item.
+
+---
+
+# ADR 003 [06/12/2026]
+## Test Coverage Strategy and Code Analysis Exclusions
+
+## Context
+To ensure the long-term maintainability and reliability of the Supermarket Chain Management API, we are integrating automated quality gates into our CI/CD pipeline using JaCoCo and SonarCloud.
+
+A common pitfall in software testing is chasing a 100% coverage metric by writing tests for boilerplate code, which inflates the coverage percentage without adding real value or security to the application. We need to define a clear testing strategy that focuses developer effort on actual business logic and architectural boundaries.
+
+## Decision
+We have decided to establish an **80% Code Coverage Quality Gate** focused strictly on the core behavior of the application. To achieve a realistic and valuable metric, we are implementing the following rules:
+
+1. **JaCoCo Exclusions:** We explicitly exclude the following components from the coverage analysis via the `pom.xml`:
+  * **Anemic Models & Data Transporters:** Entities and DTOs. Since we utilize Lombok for boilerplate generation, testing getters, setters, and constructors provides zero architectural value.
+  * **Configuration Classes:** Spring configuration files (e.g., Swagger config) and the Main Application class.
+  * **Static Mappers:** Pure mapping interfaces/classes devoid of complex business logic.
+
+2. **Testing Focus:** Unit testing efforts will be strictly directed toward:
+  * **Service Layer:** Validating business rules, state mutations, and repository interactions using Mockito.
+  * **Presentation Layer (Controllers):** Validating HTTP contracts, payload serialization, and API routing using `MockMvc`.
+  * **Exception Handling:** Ensuring `GlobalExceptionHandler` accurately captures and formats error responses for invalid payloads (Sad Paths and Edge Cases).
+
+3. **Lifecycle Binding:** The JaCoCo report generation is bound to the Maven `verify` phase. This ensures that in the future, both fast unit tests and heavier integration tests (e.g., Testcontainers) are unified into a single coverage report before the CI pipeline evaluates the Quality Gate.
+
+## Consequences
+
+### Positive
+* **High-Value Metrics:** The coverage percentage will accurately reflect the health of the application's actual logic.
+* **Developer Productivity:** Time is not wasted writing meaningless tests for auto-generated code.
+* **Robust API Contract:** Emphasizing MockMvc tests guarantees that frontend clients and external consumers receive consistent HTTP status codes and JSON structures, even during edge cases (e.g., `TypeMismatch` or malformed JSON).
+
+### Negative / Risks
+* Misconfigurations in Spring `@Configuration` classes will not be caught by unit test coverage. This risk is mitigated by relying on integration tests and application startup validations to catch context-loading errors.
