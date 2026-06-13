@@ -2,6 +2,7 @@ package com.fireboxsys.supermarkets.service;
 
 import com.fireboxsys.supermarkets.dto.ProductRequestDTO;
 import com.fireboxsys.supermarkets.dto.ProductResponseDTO;
+import com.fireboxsys.supermarkets.exception.NotFoundException;
 import com.fireboxsys.supermarkets.model.*;
 import com.fireboxsys.supermarkets.repository.ProductRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,6 +51,8 @@ class ProductServiceTest {
         validRequestDTO.setPrice(1.50);
         validRequestDTO.setStock(100);
     }
+
+    //----------------------------------------------- HAPPY PATHS -----------------------------------------------------//
 
     @Test
     @DisplayName("Should save a product")
@@ -168,5 +171,48 @@ class ProductServiceTest {
 
         productService.delete(99L);
         verify(productRepository, times(1)).delete(mockProduct);
+    }
+
+    // ----------------------------------------------------- SAD PATHS -----------------------------------------------------//
+
+    @Test
+    @DisplayName("Should throw NotFoundException when product to find does not exist")
+    void findById_whenProductNotFound_shouldThrowException() {
+        when(productRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> productService.findById(99L));
+        verify(productRepository, times(1)).findById(99L);
+    }
+
+    @Test
+    @DisplayName("Should throw NotFoundException when trying to update a non-existent product")
+    void update_whenProductNotFound_shouldThrowException() {
+        ProductRequestDTO updateDTO = new ProductRequestDTO();
+        updateDTO.setName("Ghost Product");
+        updateDTO.setPrice(10.0);
+
+        when(productRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> productService.update(99L, updateDTO));
+
+        verify(productRepository, never()).save(any(Product.class));
+    }
+
+    @Test
+    @DisplayName("Should throw NotFoundException when trying to delete a non-existent product")
+    void delete_whenProductNotFound_shouldThrowException() {
+        when(productRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> productService.delete(99L));
+
+        verify(productRepository, never()).delete(any(Product.class));
+    }
+
+    @Test
+    @DisplayName("Should throw NotFoundException when there are no top products (empty database or no sales)")
+    void findTopProduct_whenNoProductsExist_shouldThrowException() {
+        when(productRepository.findTopProducts(any(Pageable.class))).thenReturn(List.of());
+
+        assertThrows(NotFoundException.class, () -> productService.findTopProduct());
     }
 }

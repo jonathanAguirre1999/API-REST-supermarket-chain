@@ -63,7 +63,7 @@ We abolished any distinct Service or Repository layers for `SaleDetails`. The `S
 * Any database state transition (Insertion, Selection, Deletion) affecting line items **MUST** channel exclusively through the parent `SaleRepository`.
 * This establishes a highly controlled transactional boundary and protects relational integrity.
 
-### 2. Implement a Transaction-Isolated, Anti-Fraud Checkout Pipeline
+### 2. Implement a Transaction-Isolated, Transactional Sales Validation Workflow
 The sales creation logic inside `SaleService.save()` is bound by Spring's `@Transactional` annotation and executes under these conditions:
 * **Zero Payloader Pricing Trust:** The incoming `SaleRequestDTO` only defines product IDs and required quantities. The system explicitly drops payload-submitted prices and forces an isolated query to the database per item to read the immutable `Product.getPrice()`.
 * **Fail-Fast Inventory Interception:** Prior to linking, stock availability is evaluated (`Product.getStock() < requestedQuantity`). If inventory is insufficient, execution breaks immediately via a specialized `NotEnoughStockException`, causing a clean database rollback.
@@ -80,7 +80,7 @@ Every multi-row tracking route (`findAll` on Products, `findAll` on Sales, and `
 
 ### 5. Centralize Error Structuring and Extinguish Whitelabel Leakage
 * Created a unified `ErrorResponseDTO` mapping `timestamp`, `status`, `error` (HTTP string representation), `message`, `path`, and an optional `validationErrors` list.
-* Annotated a global class with `@RestControllerAdvice` containing targeted `@ExceptionHandler` blocks for `NotFoundException` (Maps to `409 Conflict`), `NotEnoughStockException` (Maps to `404 Not Found`), and `MethodArgumentNotValidException` (Maps to `400 Bad Request`, converting validation constraints into a readable error array).
+* Annotated a global class with `@RestControllerAdvice` containing targeted `@ExceptionHandler` blocks for `NotFoundException` (Maps to `404 Not Found`), `NotEnoughStockException` (Maps to `404 Conflict`), and `MethodArgumentNotValidException` (Maps to `400 Bad Request`), converting validation constraints into a readable error array.
 * Disabled native web HTML error pages via `spring.web.error.whitelabel.enabled=false` and optimized resource indexing with `spring.web.resources.add-mappings=false`.
 
 ### Consequences

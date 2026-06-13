@@ -100,6 +100,7 @@ public class SaleService implements ISaleService{
     @Override
     @Transactional(readOnly = true)
     public Page<SaleResponseDTO> findByBranchId(Long branchId, Pageable pageable) {
+        branchRepository.findById(branchId).orElseThrow(() -> new NotFoundException("Branch not found: id #" + branchId));
         return saleRepository.findSalesByBranchId(branchId, pageable).map(Mapper::toDTO);
     }
 

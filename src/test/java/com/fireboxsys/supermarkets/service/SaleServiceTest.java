@@ -3,6 +3,8 @@ package com.fireboxsys.supermarkets.service;
 import com.fireboxsys.supermarkets.dto.SaleDetailsRequestDTO;
 import com.fireboxsys.supermarkets.dto.SaleRequestDTO;
 import com.fireboxsys.supermarkets.dto.SaleResponseDTO;
+import com.fireboxsys.supermarkets.exception.NotEnoughStockException;
+import com.fireboxsys.supermarkets.exception.NotFoundException;
 import com.fireboxsys.supermarkets.model.*;
 import com.fireboxsys.supermarkets.repository.BranchRepository;
 import com.fireboxsys.supermarkets.repository.ProductRepository;
@@ -88,7 +90,7 @@ class SaleServiceTest {
         mockSaleDetails.setSale(mockSale);
     }
 
-    // -------------------------- HAPPY PATH ---------------------------------------------------//
+    // ------------------------------------------------ HAPPY PATHS ---------------------------------------------------//
 
     @Test
     @DisplayName("Should successfully save a sale and deduct stock when inventory is sufficient")
@@ -194,11 +196,13 @@ class SaleServiceTest {
     @Test
     @DisplayName("Should successfully return all sales when branch ID is correct")
     void findByBranchId() {
+        when(branchRepository.findById(mockBranch.getId())).thenReturn(Optional.of(mockBranch));
+
         Page<Sale> mockPage = new PageImpl<>(List.of(mockSale));
 
-        when(saleRepository.findSalesByBranchId(eq(1L), any(Pageable.class))).thenReturn(mockPage);
+        when(saleRepository.findSalesByBranchId(anyLong(), any(Pageable.class))).thenReturn(mockPage);
 
-        Page<SaleResponseDTO> responseDTOList = saleService.findByBranchId(1L, Pageable.unpaged());
+        Page<SaleResponseDTO> responseDTOList = saleService.findByBranchId(mockBranch.getId(), Pageable.unpaged());
 
         assertNotNull(responseDTOList, "Response should not be null");
         assertFalse(responseDTOList.isEmpty(), "Response should not be empty");
@@ -229,4 +233,70 @@ class SaleServiceTest {
 
         verify(saleRepository, times(1)).findById(10L);
     }
+
+    // ----------------------------------------------------- SAD PATHS & EDGE CASES -----------------------------------------------------//
+
+    @Test
+    @DisplayName("Should throw NotFoundException when trying to find a non-existent sale")
+    void findById_whenSaleNotFound_shouldThrowException() {
+        when(saleRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> saleService.findById(99L));
+        verify(saleRepository, times(1)).findById(99L);
+    }
+
+    @Test
+    @DisplayName("Should throw NotFoundException when fetching sales for a non-existent branch")
+    void findByBranchId_whenBranchNotFound_shouldThrowException() {
+        when(branchRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> saleService.findByBranchId(99L, Pageable.unpaged()));
+
+        verify(saleRepository, never()).findSalesByBranchId(anyLong(), any(Pageable.class));
+    }
+
+    @Test
+    @DisplayName("Should throw NotFoundException when creating a sale for a non-existent branch")
+    void save_whenBranchNotFound_shouldThrowException() {
+        assertThrows(NotFoundException.class, () -> saleService.save(validRequestDTO));
+
+        verify(saleRepository, never()).save(any(Sale.class));
+    }
+
+    @Test
+    @DisplayName("Should throw NotFoundException when creating a sale with a non-existent product")
+    void save_whenProductNotFound_shouldThrowException() {
+        Long productId = validDetailsRequestDTO.getProductId();
+        when(productRepository.findById(productId)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> saleService.save(validRequestDTO));
+        verify(saleRepository, never()).save(any(Sale.class));
+    }
+
+    @Test
+    @DisplayName("Should throw NotEnoughStockException when a product does not have enough stock")
+    void save_whenNotEnoughStock_shouldThrowException() {
+        Product lowStockProduct = new Product();
+        lowStockProduct.setId(1L);
+        lowStockProduct.setPrice(10.0);
+        lowStockProduct.setStock(2);
+
+        when(productRepository.findById(validDetailsRequestDTO.getProductId())).thenReturn(Optional.of(lowStockProduct));
+
+        validDetailsRequestDTO.setQuantity(5);
+
+        assertThrows(NotEnoughStockException.class, () -> saleService.save(validRequestDTO));
+
+        verify(saleRepository, never()).save(any(Sale.class));
+    }
+
+    @Test
+    @DisplayName("Should throw NotFoundException when trying to delete a non-existent sale")
+    void delete_whenSaleNotFound_shouldThrowException() {
+        when(saleRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> saleService.delete(99L));
+        verify(saleRepository, never()).delete(any(Sale.class));
+    }
+
 }

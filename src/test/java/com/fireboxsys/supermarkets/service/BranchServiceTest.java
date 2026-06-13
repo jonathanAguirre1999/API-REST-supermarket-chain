@@ -2,6 +2,7 @@ package com.fireboxsys.supermarkets.service;
 
 import com.fireboxsys.supermarkets.dto.BranchRequestDTO;
 import com.fireboxsys.supermarkets.dto.BranchResponseDTO;
+import com.fireboxsys.supermarkets.exception.NotFoundException;
 import com.fireboxsys.supermarkets.model.Branch;
 import com.fireboxsys.supermarkets.repository.BranchRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -131,5 +132,41 @@ class BranchServiceTest {
         branchService.delete(1L);
 
         verify(branchRepository, times(1)).delete(mockBranch);;
+    }
+
+    // ----------------------------------------------------- SAD PATHS -----------------------------------------------------//
+
+    @Test
+    @DisplayName("Should throw NotFoundException when branch to find does not exist")
+    void findById_whenBranchNotFound_shouldThrowException() {
+        when(branchRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> branchService.findById(99L));
+
+        verify(branchRepository, times(1)).findById(99L);
+    }
+
+    @Test
+    @DisplayName("Should throw NotFoundException when trying to update a non-existent branch")
+    void update_whenBranchNotFound_shouldThrowException() {
+        BranchRequestDTO updateDTO = new BranchRequestDTO();
+        updateDTO.setName("Ghost Branch");
+        updateDTO.setAddress("Nowhere St");
+
+        when(branchRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> branchService.update(99L, updateDTO));
+
+        verify(branchRepository, never()).save(any(Branch.class));
+    }
+
+    @Test
+    @DisplayName("Should throw NotFoundException when trying to delete a non-existent branch")
+    void delete_whenBranchNotFound_shouldThrowException() {
+        when(branchRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> branchService.delete(99L));
+
+        verify(branchRepository, never()).delete(any(Branch.class));
     }
 }

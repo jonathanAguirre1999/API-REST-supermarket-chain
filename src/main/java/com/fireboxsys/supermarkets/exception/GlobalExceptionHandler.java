@@ -85,9 +85,15 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ErrorResponseDTO> handleTypeMismatch(MethodArgumentTypeMismatchException ex, HttpServletRequest request) {
+        Class<?> requiredType = ex.getRequiredType();
+
+        String expectedType = (requiredType != null)
+                ? requiredType.getSimpleName()
+                : "unknown";
+
         String error = String.format("Parameter '%s' must be a '%s' data type. Received value: '%s'",
                 ex.getName(),
-                ex.getRequiredType().getSimpleName(),
+                expectedType,
                 ex.getValue());
 
         ErrorResponseDTO errorResponseDTO = ErrorResponseDTO.builder()

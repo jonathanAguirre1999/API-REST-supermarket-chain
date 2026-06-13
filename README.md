@@ -5,11 +5,11 @@
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=jonathanAguirre1999_API-REST-supermarket-chain&metric=coverage)](https://sonarcloud.io/summary/new_code?id=jonathanAguirre1999_API-REST-supermarket-chain)
 
 
-### RESTful Backend Engine for Retail Logistics
+### Backend API for Retail Logistics
 
-An architectural showcase of a RESTful API built with **Java** and **Spring Boot**. This project was developed for a real-world supermarket management ecosystem, handling multi-branch coordination, highly dynamic product catalogs, automated stock control, and transaction-safe sales processing.
+REST API built with **Java** and **Spring Boot** for managing supermarket ecosystems, branches, inventory, and sales transactions.
 
-This system demonstrates the implementation of best practices in software engineering standards, advanced persistence patterns, clean architecture, and rigorous validation metrics.
+This system demonstrates the implementation of best practices in software engineering standards, advanced persistence patterns, clean architecture, request validation, error handling, and automated testing.
 
 ---
 
@@ -18,8 +18,8 @@ This system demonstrates the implementation of best practices in software engine
 The system is built upon **Clean Architecture** and **Layered Architecture** paradigms, enforcing separation of concerns and the **SOLID** design principles:
 
 * **Domain-Driven Design (DDD) Strategy:** `Sale` is established as an **Aggregate Root**. Sub-entities like `SaleDetails` have their lifecycles strictly managed by the parent root through JPA cascades, eliminating fragmented state synchronization.
-* **Decoupled Data Contracts (DTO Pattern):** Absolute isolation between the persistence layer (Database Entities) and the presentation layer (Network Payloads). Specialized `RequestDTO` and `ResponseDTO` structures prevent data leakage and decouple API evolution from schema alterations.
-* **Pure Single-Responsibility Mappers:** Static mapping components designed with zero business logic. They serve exclusively as data transporters, ensuring computational mutations happen strictly inside the Service layer.
+* **Decoupled Data Contracts (DTO Pattern):** Clear separation between the persistence layer and the presentation layer. Specialized `RequestDTO` and `ResponseDTO` structures prevent data leakage and decouple API evolution from schema alterations.
+* **Dedicated Mapping Layer:** Static mapping components designed with zero business logic. They serve exclusively as data transporters, ensuring computational mutations happen strictly inside the Service layer.
 * **Inversion of Control (IoC):** Controller components depend entirely on service abstractions (`interfaces`) rather than concrete implementations, maximizing testability, decoupling, and flexibility for future architectural adjustments.
 
 ---
@@ -28,17 +28,17 @@ The system is built upon **Clean Architecture** and **Layered Architecture** par
 
 ### 1. Transaction-Safe Sales Engine (`@Transactional`)
 Processing a supermarket invoice requires multi-point data synchronization. The sales processing pipeline guarantees **Atomicity** and **Consistency**:
-* **Payload Neutralization:** The API completely ignores pricing data sent by the client. It dynamically resolves product prices directly from the database, preventing price-tampering fraud.
+* **Server-side Price Validation:** The API completely ignores pricing data sent by the client, resolving product prices directly from the database, preventing price-tampering fraud.
 * **Atomic Rollbacks:** If a transaction includes 50 items and item 49 fails validation or suffers from stock depletion, the entire operation undergoes an instantaneous rollback, ensuring zero corrupted or "half-saved" data states.
 * **Bi-directional Graph Management:** Orchestrates complex relationship linking in-memory prior to execution, ensuring foreign keys are correctly bound without overhead database hits.
 
 ### 2. Advanced Persistence Mechanics & Optimization
 * **Hibernate Dirty Checking:** Stateful entities retrieved within a transactional context are tracked via Hibernate's session snapshot. State mutations (such as updating stock on sale creation or reversing inventory on logical cancellation) rely on automatic dirty checking, completely avoiding redundant and expensive `.save()` repository operations.
-* **Server-Side Pagination & Chunking (`Pageable`):** The product catalog and historical transaction routes completely discard unbounded collections (`List<E>`). Instead, they enforce strict, index-optimized server-side pagination. This protects system memory, allowing the backend to scale effortlessly to millions of rows while maintaining a microscopic memory footprint.
-* **Advanced Analytical Queries (JPQL):** Deep database-level aggregation utilizing structural joining and grouping (`COUNT`, `SUM`, `GROUP BY`) to extract high-value performance metrics (e.g., retrieving the historical top-selling product) with minimal execution overhead.
+* **Server-Side Pagination & Chunking (`Pageable`):** The product catalog and historical transaction routes completely discard unbounded collections (`List<E>`). Instead, they enforce index-optimized server-side pagination. This protects system memory, allowing the API to efficiently handle large datasets while reducing memory consumption.
+* **Advanced Analytical Queries (JPQL):** Deep database-level aggregation using structural joining and grouping (`COUNT`, `SUM`, `GROUP BY`) to extract business metrics (e.g., retrieving the historical top-selling product) with minimal execution overhead.
 
 ### 3. Global Exception Mapping
-The backend replaces Spring's default Whitelabel HTML views and raw stack traces with a standardized JSON Error Matrix through a unified `@RestControllerAdvice`:
+The backend replaces Spring's default Whitelabel HTML views and raw stack traces with standardized JSON error responses through a unified `@RestControllerAdvice`:
 * **Predictable Error Contracts:** Clients consistently receive an explicit `ErrorResponseDTO` mapping timestamp, exact HTTP statuses, localized messages, and request URIs.
 * **Data Integrity Shield:** Critical exception payloads (such as `NotFoundException` or `NotEnoughStockException`) are translated directly into precise HTTP responses (`404 Not Found`, `409 Conflict`).
 * **Structured Validation Array:** Automatically captures failures triggered by Jakarta Validation (`@Valid`). If an incoming payload contains multiple structural errors (e.g., empty strings, negative numbers), the API intercepts them globally and maps them out as a clean array within a `400 Bad Request` state, empowering front-end apps to bind form errors dynamically.
@@ -91,6 +91,16 @@ The system integrates an interactive documentation layout using **Springdoc Open
 
 ---
 
-## Upcoming Quality Assurance Roadmap
+## Quality Assurance
+
+- Unit testing with JUnit 5
+- Mocking with Mockito
+- Continuous Integration with GitHub Actions
+- Static analysis using SonarCloud
+- Code coverage reporting with JaCoCo
+
+---
+
+## Upcoming
 1. **Containerized Deployment:** Multi-stage **Docker** build configurations to sandbox the Spring Boot application and link it to a containerized PostgreSQL instance via Docker Compose.
 2. **Security & Access Control:** Enhanced security measures to protect sensitive data and prevent unauthorized access through **Spring Security** and **JWT** authentication.
