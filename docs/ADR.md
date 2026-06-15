@@ -93,35 +93,26 @@ Every multi-row tracking route (`findAll` on Products, `findAll` on Sales, and `
 
 ---
 
-# ADR 003 [06/12/2026]
-## Test Coverage Strategy and Code Analysis Exclusions
+# ADR 006 [06/13/2026]
 
-## Context
-To ensure the long-term maintainability and reliability of the Supermarket Chain Management API, we are integrating automated quality gates into our CI/CD pipeline using JaCoCo and SonarCloud.
-
-A common pitfall in software testing is chasing a 100% coverage metric by writing tests for boilerplate code, which inflates the coverage percentage without adding real value or security to the application. We need to define a clear testing strategy that focuses developer effort on actual business logic and architectural boundaries.
+## Context 
+During the implementation of unit tests for the Service layer (Sad Paths and Edge Cases) and the resolution of SonarCloud quality gates, three specific issues were identified:
+1. **Missing Parent Validation (NPE):** The `SaleService.findByBranchId` method executed database queries for sales without first verifying if the requested `Branch` existed. In testing, this resulted in a `NullPointerException` when the un-mocked repository returned `null`. In production, it would fail to return a proper `404 Not Found`.
+2. **Static Analysis Vulnerabilities:** SonarCloud flagged a potential `NullPointerException` in the `GlobalExceptionHandler` when calling `ex.getRequiredType().getSimpleName()`. Because `getRequiredType()` is technically nullable and a method call, SonarCloud rejected consecutive calls to it.
+3. **Desynchronized Coverage Metrics:** The "Overall Code" coverage metric in SonarCloud dropped drastically (to ~73%) because it was evaluating files (DTOs, Models, Mappers, Configs) that had been explicitly ignored by JaCoCo in previous architectural decisions.
 
 ## Decision
-We have decided to establish an **80% Code Coverage Quality Gate** focused strictly on the core behavior of the application. To achieve a realistic and valuable metric, we are implementing the following rules:
-
-1. **JaCoCo Exclusions:** We explicitly exclude the following components from the coverage analysis via the `pom.xml`:
-  * **Anemic Models & Data Transporters:** Entities and DTOs. Since we utilize Lombok for boilerplate generation, testing getters, setters, and constructors provides zero architectural value.
-  * **Configuration Classes:** Spring configuration files (e.g., Swagger config) and the Main Application class.
-  * **Static Mappers:** Pure mapping interfaces/classes devoid of complex business logic.
-
-2. **Testing Focus:** Unit testing efforts will be strictly directed toward:
-  * **Service Layer:** Validating business rules, state mutations, and repository interactions using Mockito.
-  * **Presentation Layer (Controllers):** Validating HTTP contracts, payload serialization, and API routing using `MockMvc`.
-  * **Exception Handling:** Ensuring `GlobalExceptionHandler` accurately captures and formats error responses for invalid payloads (Sad Paths and Edge Cases).
-
-3. **Lifecycle Binding:** The JaCoCo report generation is bound to the Maven `verify` phase. This ensures that in the future, both fast unit tests and heavier integration tests (e.g., Testcontainers) are unified into a single coverage report before the CI pipeline evaluates the Quality Gate.
+1. **Implement Explicit Parent Validation (Fail-Fast):** Enforce a strict rule in the Service layer to always validate the existence of parent entities (e.g., `branchRepository.findById().orElseThrow()`) before querying for their dependent entities.
+2. **Local Variable Extraction for Nullable Returns:** In the exception handler, extract nullable method returns into local variables (`Class<?> requiredType`) and implement safe fallbacks using ternary operators (e.g., returning "unknown" if null) to satisfy static analysis and prevent 500 Internal Server Errors.
+3. **Synchronize SonarCloud Exclusions:** Add the `<sonar.coverage.exclusions>` property to the `pom.xml` to mirror the JaCoCo exclusions, explicitly ignoring `**/model/**`, `**/dto/**`, `**/config/**`, and `**/mappers/**` from SonarCloud's analysis.
 
 ## Consequences
 
 ### Positive
-* **High-Value Metrics:** The coverage percentage will accurately reflect the health of the application's actual logic.
-* **Developer Productivity:** Time is not wasted writing meaningless tests for auto-generated code.
-* **Robust API Contract:** Emphasizing MockMvc tests guarantees that frontend clients and external consumers receive consistent HTTP status codes and JSON structures, even during edge cases (e.g., `TypeMismatch` or malformed JSON).
+* **Robust Error Responses:** The API now correctly aborts execution and returns a `404 Not Found` when requesting data for non-existent parent entities, preventing downstream null pointer errors.
+* **Resolved Code Smells:** The exception handler is fully robust against edge-case null values from the Spring framework, clearing SonarCloud's security warnings.
+* **Accurate Metrics:** The SonarCloud dashboard now accurately reflects the actual test coverage of the business logic (~89.4%), preventing false-negative metric reports.
 
-### Negative / Risks
-* Misconfigurations in Spring `@Configuration` classes will not be caught by unit test coverage. This risk is mitigated by relying on integration tests and application startup validations to catch context-loading errors.
+### Negative
+* **Minor Performance Trade-off:** Adding an explicit `.findById()` check before querying child entities adds a minor read overhead to the database. This is accepted as a necessary trade-off for data integrity and correct HTTP status code mapping.
+* **Maintenance Overhead:** Developers must manually update both JaCoCo and SonarCloud exclusion lists in the `pom.xml` if new architectural packages that do not require testing are added in the future.

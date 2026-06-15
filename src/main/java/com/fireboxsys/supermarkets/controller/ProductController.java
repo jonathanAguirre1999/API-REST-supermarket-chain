@@ -27,7 +27,7 @@ public class ProductController {
     //GET METHODS
     @GetMapping
     public ResponseEntity<Page<ProductResponseDTO>> findAllProducts(
-            @PageableDefault(page = 0, size = 50, sort = "name", direction = Sort.Direction.DESC) Pageable pageable) {
+            @PageableDefault(page = 0, size = 50, sort = "name", direction = Sort.Direction.ASC) Pageable pageable) {
         return ResponseEntity.ok(productService.findAll(pageable));
     }
 

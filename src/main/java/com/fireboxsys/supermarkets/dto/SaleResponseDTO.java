@@ -1,5 +1,6 @@
 package com.fireboxsys.supermarkets.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fireboxsys.supermarkets.model.Status;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,7 +17,10 @@ import java.util.List;
 public class SaleResponseDTO {
 
     private Long id;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime date;
+
     private Status status;
     private Double total;
     private Long branchId;

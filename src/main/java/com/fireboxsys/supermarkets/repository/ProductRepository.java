@@ -11,7 +11,7 @@ import java.util.List;
 @Repository
 public interface ProductRepository extends JpaRepository <Product, Long>{
 
-    @Query("SELECT d.product FROM Sale s JOIN s.saleDetails d GROUP BY d.product ORDER BY SUM (d.quantity) DESC")
+    @Query("SELECT d.product FROM Sale s JOIN s.saleDetails d GROUP BY d.product ORDER BY SUM (d.quantity) ASC")
     List<Product> findTopProducts(Pageable pageable);
 
 }
