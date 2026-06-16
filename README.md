@@ -87,7 +87,6 @@ The system integrates an interactive documentation layout using **Springdoc Open
 ![Swagger Interactive Doc Screen](docs/images/swagger_doc_page.png)
 *Swagger interactive documentation included for use through: http://localhost:8080/api/docs once the application is running.*
 </details>
-</details>
 
 <br>
 
