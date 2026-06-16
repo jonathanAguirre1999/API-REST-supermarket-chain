@@ -93,7 +93,7 @@ Every multi-row tracking route (`findAll` on Products, `findAll` on Sales, and `
 
 ---
 
-# ADR 006 [06/13/2026]
+# ADR 003 [06/13/2026]
 
 ## Context 
 During the implementation of unit tests for the Service layer (Sad Paths and Edge Cases) and the resolution of SonarCloud quality gates, three specific issues were identified:
@@ -116,3 +116,28 @@ During the implementation of unit tests for the Service layer (Sad Paths and Edg
 ### Negative
 * **Minor Performance Trade-off:** Adding an explicit `.findById()` check before querying child entities adds a minor read overhead to the database. This is accepted as a necessary trade-off for data integrity and correct HTTP status code mapping.
 * **Maintenance Overhead:** Developers must manually update both JaCoCo and SonarCloud exclusion lists in the `pom.xml` if new architectural packages that do not require testing are added in the future.
+
+---
+
+# ADR 004 [06/14/2026]
+
+## Context & Problem Statement
+To facilitate seamless deployment, testing across multiple environments, and future CI/CD pipeline integration, the application required a containerization strategy. The primary challenges were:
+1. Distributing the Spring Boot application without forcing host environments (or evaluators) to install Java 21, Maven, or configure environment variables.
+2. Preventing the source code and heavy build tools (Maven dependencies) from bloating the final production image.
+3. Ensuring the PostgreSQL database and the API boot simultaneously within an isolated, easily reproducible network.
+
+## Decision
+1. **Multi-Stage Dockerfile:** Implemented a two-tier build process. The first stage (`builder`) uses a Maven-equipped image to resolve dependencies and compile the code. The second stage (`runtime`) uses an Alpine Linux JRE image, inheriting strictly the compiled `.jar` file from the builder stage.
+2. **Docker Compose Orchestration:** Configured a `docker-compose.yml` to define both the `api` and `postgres` services. The Compose file handles network DNS resolution (allowing the API to connect to `jdbc:postgresql://postgres:5432/...`) and orchestrates persistent volume mapping for database data.
+
+## Consequences
+
+### Positive
+* **Immutable Infrastructure:** The application is guaranteed to run identically on any machine with a Docker engine, eliminating anomalies.
+* **Optimized Image Size & Security:** The final container image is significantly lighter (~200MB compared to ~800MB) and inherently more secure, as the raw source code and Maven binaries are discarded after the builder stage.
+* **Frictionless Onboarding:** Developers or clients can boot the entire ecosystem (DB + API) with a single command (`docker compose up -d`).
+
+### Negative
+* **Port Management Overhead:** Exposing the containerized PostgreSQL to the host machine requires port offsetting (e.g., `5433:5432`) to avoid binding conflicts with pre-existing local database installations.
+* **Initial Build Latency:** The first execution of the builder stage requires downloading the entire internet of Maven dependencies, though this is mitigated in later builds via Docker's layer caching (`COPY pom.xml` execution ordering).

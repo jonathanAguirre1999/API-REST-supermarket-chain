@@ -194,7 +194,7 @@ The system integrates an interactive documentation layout using **Springdoc Open
 <summary><b>View Post Method Response – Creation of a product (Postman)</b></summary>
 <br>
 
-![Successfull Product Creation](docs/images/product_create.png)
+![Successfull Product Creation](docs/images/products_create.png)
 *Post Request returns 201 Created and standard structure of the newly created product.*
 
 </details>
@@ -209,7 +209,7 @@ The system integrates an interactive documentation layout using **Springdoc Open
 <summary><b>View Get All products response (Postman)</b></summary>
 <br>
 
-![Successfull Product Request](docs/images/product_get_all.png)
+![Successfull Product Request](docs/images/products_get_all.png)
 *Get Request returns 200 Ok standard paginated response.*
 
 </details>
@@ -224,7 +224,7 @@ The system integrates an interactive documentation layout using **Springdoc Open
 <summary><b>View Get Product with ID response (Postman)</b></summary>
 <br>
 
-![Successfull product request](docs/images/product_get_id.png)
+![Successfull product request](docs/images/products_get_id.png)
 *Get Request returns 200 Ok and standard response structure when ID is correct.*
 
 </details>
@@ -367,6 +367,23 @@ The system integrates an interactive documentation layout using **Springdoc Open
 
 ---
 
+## Infrastructure & Containerization
+
+The application and its relational database are fully containerized to guarantee environment parity across development, testing, and production instances.
+
+### Multi-Stage Docker Build
+The API utilizes a multi-stage Dockerfile to optimize the final artifact:
+1. **Builder Stage:** Uses a heavy `maven:3.9.6-eclipse-temurin-21` image to download dependencies securely and compile the `.jar` executable.
+2. **Runtime Stage:** Extracts only the compiled `.jar` into an ultra-lightweight `eclipse-temurin:21-jre-alpine` image. This strips away the source code and build tools, drastically reducing the image size and attack surface.
+
+### Execution via Docker Compose
+To spin up the entire ecosystem (API + PostgreSQL), ensure the Docker engine is running and execute:
+
+```bash
+docker compose up --build -d
+```
+
+---
+
 ## Upcoming
-1. **Containerized Deployment:** Multi-stage **Docker** build configurations to sandbox the Spring Boot application and link it to a containerized PostgreSQL instance via Docker Compose.
-2. **Security & Access Control:** Enhanced security measures to protect sensitive data and prevent unauthorized access through **Spring Security** and **JWT** authentication.
+1. **Security & Access Control:** Enhanced security measures to protect sensitive data and prevent unauthorized access through **Spring Security** and **JWT** authentication.
