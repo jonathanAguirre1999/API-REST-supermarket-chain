@@ -5,6 +5,16 @@
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=jonathanAguirre1999_API-REST-supermarket-chain&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=jonathanAguirre1999_API-REST-supermarket-chain)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=jonathanAguirre1999_API-REST-supermarket-chain&metric=coverage)](https://sonarcloud.io/summary/new_code?id=jonathanAguirre1999_API-REST-supermarket-chain)
 
+<br>
+<div align="center">
+
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/supermarket_api_arc_diag_dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="docs/supermarket_api_arc_diag.svg">
+    <img alt="Supermarket API Architecture Flow" src="docs/supermarket_api_arc_diag.svg" width="90%">
+  </picture>
+</div>
+<br>
     
 ### Backend API for Retail Logistics
 
