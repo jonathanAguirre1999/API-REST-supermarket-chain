@@ -32,6 +32,4 @@ public class Sale {
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SaleDetails> saleDetails = new ArrayList<>();
 
-    private Boolean isDeleted;
-
 }
